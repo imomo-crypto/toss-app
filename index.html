@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f6f3ee">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<title>扔 · TOSS</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f3ee;
+  --bg2: #eee9e1;
+  --bg3: #e5dfd5;
+  --card: #ffffff;
+  --text: #2c2a26;
+  --t2: #6b6560;
+  --t3: #a09890;
+  --t4: #c8c0b8;
+  --line: #ddd6cc;
+  --accent: #7a6e5e;
+  --accent2: #5c524a;
+  --green: #6b8f71;
+  --green-bg: #eef4ef;
+  --amber: #b8923e;
+  --amber-bg: #f8f3ea;
+  --red-soft: #c47d6d;
+  --font-s: 'Noto Serif SC', 'Georgia', serif;
+  --font-m: 'DM Mono', 'Menlo', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-s);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Views ── */
+.view { display: none; min-height: 100vh; flex-direction: column; }
+.view.active { display: flex; }
+
+/* ── Nav ── */
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; background: var(--bg); z-index: 100;
+}
+.nav-title {
+  font-size: 15px; font-weight: 400; letter-spacing: 0.15em; color: var(--accent2);
+}
+.nav-btn {
+  background: none; border: none; font-family: var(--font-s);
+  font-size: 13px; color: var(--t3); cursor: pointer; padding: 6px 10px;
+  transition: color 0.2s;
+}
+.nav-btn:hover { color: var(--text); }
+.nav-right { display: flex; gap: 4px; align-items: center; }
+.badge {
+  background: var(--accent); color: var(--bg); font-family: var(--font-m);
+  font-size: 10px; padding: 2px 6px; border-radius: 8px; margin-left: 4px;
+}
+
+/* ── Home ── */
+#view-home { align-items: center; }
+.home-inner {
+  width: 100%; max-width: 440px; padding: 0 20px;
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1;
+}
+
+/* Time/weather context */
+.context-line {
+  font-family: var(--font-m); font-size: 11px; color: var(--t3);
+  letter-spacing: 0.08em; margin-top: 28px; margin-bottom: 32px;
+  text-align: center; line-height: 1.8;
+}
+
+/* Question card */
+.question-card {
+  width: 100%; background: var(--card); border: 1px solid var(--line);
+  padding: 36px 28px; margin-bottom: 28px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  opacity: 0; transform: translateY(8px);
+  animation: fadeUp 0.5s ease forwards;
+}
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+.q-zone {
+  font-family: var(--font-m); font-size: 10px; color: var(--t3);
+  letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 16px;
+}
+.q-text {
+  font-size: 17px; line-height: 2; color: var(--text); font-weight: 300;
+}
+
+/* Answer buttons */
+.answer-btns {
+  display: flex; gap: 12px; width: 100%; margin-bottom: 20px;
+}
+.ans-btn {
+  flex: 1; padding: 14px; background: var(--card); border: 1px solid var(--line);
+  font-family: var(--font-s); font-size: 14px; color: var(--t2);
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.1em;
+}
+.ans-btn:hover { border-color: var(--accent); color: var(--text); }
+.ans-btn:active { transform: scale(0.98); }
+
+/* Follow-up (after "有") */
+.followup {
+  width: 100%; display: none; flex-direction: column; gap: 10px;
+  margin-bottom: 20px; animation: fadeUp 0.3s ease forwards;
+}
+.followup.show { display: flex; }
+.fu-btn {
+  width: 100%; padding: 13px 16px; background: var(--card);
+  border: 1px solid var(--line); font-family: var(--font-s);
+  font-size: 13px; color: var(--t2); cursor: pointer;
+  transition: all 0.2s; text-align: left; letter-spacing: 0.05em;
+  display: flex; align-items: center; gap: 10px;
+}
+.fu-btn:hover { border-color: var(--accent); color: var(--text); }
+.fu-icon { font-size: 16px; flex-shrink: 0; }
+.fu-note-wrap {
+  display: none; width: 100%; animation: fadeUp 0.2s ease forwards;
+}
+.fu-note-wrap.show { display: block; }
+.fu-note {
+  width: 100%; padding: 10px 14px; background: var(--card);
+  border: 1px solid var(--line); font-family: var(--font-s);
+  font-size: 13px; color: var(--text); outline: none;
+  transition: border-color 0.2s; letter-spacing: 0.03em;
+}
+.fu-note:focus { border-color: var(--accent); }
+.fu-note::placeholder { color: var(--t4); }
+.fu-note-btns { display: flex; gap: 8px; margin-top: 8px; }
+.fu-note-btn {
+  padding: 8px 16px; background: none; border: 1px solid var(--line);
+  font-family: var(--font-s); font-size: 12px; color: var(--t2);
+  cursor: pointer; transition: all 0.2s;
+}
+.fu-note-btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.fu-note-btn:hover { opacity: 0.8; }
+
+/* Done state */
+.done-msg {
+  display: none; width: 100%; text-align: center; padding: 20px 20px 0;
+  animation: fadeUp 0.4s ease forwards;
+  flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
+}
+.done-msg.show { display: flex; }
+.done-rings { margin-bottom: 24px; }
+.done-text { font-size: 16px; color: var(--t2); line-height: 2; }
+.done-sub { font-size: 12px; color: var(--t3); margin-top: 4px; }
+.done-btns {
+  display: flex; gap: 12px; margin-top: 28px;
+}
+.done-btn {
+  padding: 12px 20px; background: none;
+  border: 1px solid var(--line); font-family: var(--font-s);
+  font-size: 12px; color: var(--t3); cursor: pointer; transition: all 0.2s;
+  letter-spacing: 0.05em;
+}
+.done-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* Already answered state */
+.already-done {
+  width: 100%; text-align: center; padding: 40px 20px;
+}
+.ad-text { font-size: 14px; color: var(--t3); line-height: 2.2; }
+
+/* ── Stats ── */
+.stats-bar {
+  display: flex; gap: 16px; justify-content: center;
+  margin-top: 24px; margin-bottom: 32px;
+}
+.stat-item { text-align: center; }
+.stat-num {
+  font-family: var(--font-m); font-size: 22px; color: var(--accent2);
+}
+.stat-label {
+  font-size: 10px; color: var(--t3); margin-top: 2px; letter-spacing: 0.1em;
+}
+#view-keep { background: var(--bg); }
+.keep-inner {
+  max-width: 440px; width: 100%; margin: 0 auto;
+  padding: 20px 20px 80px;
+}
+.keep-empty {
+  text-align: center; padding: 60px 20px;
+  font-size: 13px; color: var(--t3); line-height: 2.2;
+}
+.keep-item {
+  background: var(--card); border: 1px solid var(--line);
+  padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: flex-start; gap: 12px;
+  animation: fadeUp 0.3s ease forwards;
+}
+.ki-info { flex: 1; min-width: 0; }
+.ki-q { font-size: 12px; color: var(--t3); line-height: 1.8; margin-bottom: 4px; }
+.ki-note { font-size: 13px; color: var(--text); line-height: 1.8; }
+.ki-date { font-family: var(--font-m); font-size: 10px; color: var(--t4); margin-top: 4px; }
+.ki-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.ki-btn {
+  background: none; border: 1px solid var(--line); width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.ki-btn:hover { border-color: var(--accent); }
+.ki-btn.done:hover { border-color: var(--green); background: var(--green-bg); }
+.ki-btn.del:hover { border-color: var(--red-soft); }
+
+/* ── Stats bar ── */
+.stats-bar {
+  display: flex; gap: 16px; justify-content: center;
+  margin-top: 8px; margin-bottom: 16px;
+}
+.stat-item {
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--font-m); font-size: 18px; color: var(--accent2);
+}
+.stat-label {
+  font-size: 10px; color: var(--t3); margin-top: 2px; letter-spacing: 0.1em;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: var(--accent2); color: var(--bg); font-family: var(--font-s);
+  font-size: 12px; padding: 10px 20px; opacity: 0; transition: all 0.3s;
+  z-index: 9000; pointer-events: none; letter-spacing: 0.05em;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Confirm ── */
+.confirm-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+  display: none; align-items: center; justify-content: center; z-index: 8000;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-box {
+  background: var(--card); border: 1px solid var(--line);
+  padding: 24px; max-width: 280px; width: 90%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.confirm-msg { font-size: 14px; line-height: 2; color: var(--text); margin-bottom: 20px; }
+.confirm-btns { display: flex; gap: 10px; }
+.confirm-btns button { flex: 1; }
+.cbtn {
+  padding: 10px; background: none; border: 1px solid var(--line);
+  font-family: var(--font-s); font-size: 12px; color: var(--t2);
+  cursor: pointer; transition: all 0.2s;
+}
+.cbtn:hover { border-color: var(--accent); }
+.cbtn.danger { color: var(--red-soft); }
+.cbtn.danger:hover { border-color: var(--red-soft); }
+
+@media(min-width:600px) {
+  .home-inner, .keep-inner { max-width: 480px; }
+  .question-card { padding: 44px 36px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HOME ══ -->
+<div id="view-home" class="view">
+  <nav class="nav">
+    <div class="nav-title">扔</div>
+    <div class="nav-right">
+      <button class="nav-btn" id="notif-btn" onclick="toggleNotif()" title="推送通知" style="font-size:16px;padding:4px 8px;">🔕</button>
+    </div>
+  </nav>
+  <div class="home-inner">
+    <div class="context-line" id="context-line"></div>
+
+    <!-- Question state -->
+    <div id="q-state">
+      <div class="question-card" id="question-card">
+        <div class="q-zone" id="q-zone"></div>
+        <div class="q-text" id="q-text"></div>
+      </div>
+      <div class="answer-btns" id="answer-btns">
+        <button class="ans-btn" onclick="answerNo()">没有</button>
+        <button class="ans-btn" onclick="answerYes()">有</button>
+      </div>
+      <div class="followup" id="followup">
+        <button class="fu-btn" onclick="doDiscard()">
+          <span class="fu-icon">↓</span><span>已经丢了</span>
+        </button>
+        <button class="fu-btn" onclick="showKeepNote()">
+          <span class="fu-icon">→</span><span>先留着</span>
+        </button>
+      </div>
+      <div class="fu-note-wrap" id="fu-note-wrap">
+        <input class="fu-note" id="fu-note" type="text" maxlength="40" placeholder="是什么东西？（可以不填）"/>
+        <div class="fu-note-btns">
+          <button class="fu-note-btn primary" onclick="doKeep()">保存</button>
+          <button class="fu-note-btn" onclick="doKeepSkip()">不填，直接保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Done state -->
+    <div class="done-msg" id="done-msg">
+      <div class="done-rings" id="done-rings"></div>
+      <div class="done-text" id="done-text"></div>
+      <div class="done-sub" id="done-sub"></div>
+      <div class="done-btns">
+        <button class="done-btn" onclick="nextQuestion()">再来一题</button>
+        <button class="done-btn" onclick="switchView('keep')">待丢清单</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-item">
+        <div class="stat-num" id="stat-discarded">0</div>
+        <div class="stat-label">已丢</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KEEP LIST ══ -->
+<div id="view-keep" class="view">
+  <nav class="nav">
+    <button class="nav-btn" onclick="switchView('home')">← 返回</button>
+    <div class="nav-title">待丢清单</div>
+    <div style="width:60px"></div>
+  </nav>
+  <div class="keep-inner" id="keep-list"></div>
+</div>
+
+<!-- Confirm & Toast -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-btns">
+      <button class="cbtn" id="confirm-cancel">取消</button>
+      <button class="cbtn danger" id="confirm-ok">确认</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════
+//  QUESTION GENERATOR
+// ═══════════════════════════
+const ZONE_NAMES = {desk:'桌面', floor:'角落', bag:'随身', bath:'浴室', kitchen:'厨房'};
+const ZONE_LOCS = {desk:'桌上', floor:'地上', bag:'包里', bath:'浴室里', kitchen:'厨房里'};
+
+// Items per zone, each with condition templates
+const ITEMS = {
+  desk: [
+    {name:'笔', conds:['写不出字的','重复的','{N}天没用过的','别人给的没用过的']},
+    {name:'纸', conds:['超过{N}天的','不需要的','皱巴巴的','过时的']},
+    {name:'充电线', conds:['重复的','坏了的','不配套的','不知道什么设备的']},
+    {name:'便利贴', conds:['已经完成的','过时的','看不清字的']},
+    {name:'小票', conds:['超过{N}天的','不需要的','皱巴巴的']},
+    {name:'包装', conds:['拆开的','空的','不需要的','堆了{N}天的']},
+    {name:'文具', conds:['{N}天没用过的','重复的','坏了的','多余的']},
+    {name:'说明书', conds:['不会再看的','对应产品已经没了的','可以网上查到的']},
+    {name:'杯子', conds:['重复的','缺角的','{N}天没用的','脏了很久没洗的']},
+    {name:'小摆件', conds:['{N}天没注意到的','积灰的','不想要的','挡路的']},
+    {name:'数据线', conds:['不知道什么设备的','坏了的','重复的','缠在一起的']},
+    {name:'收纳盒', conds:['空的','什么都没装的','积灰的']},
+    {name:'名片', conds:['用不到的','过时的','不认识的人的']},
+    {name:'优惠券', conds:['过期的','不会去用的','不知道哪来的']},
+  ],
+  floor: [
+    {name:'袋子', conds:['{N}天没打开的','空的','里面套着另一个袋子的','堵在角落的']},
+    {name:'快递箱', conds:['拆了没扔的','空的','堆了{N}天的','占地方的']},
+    {name:'鞋', conds:['不穿的','坏了的','不合脚的','过季的','磨脚的']},
+    {name:'东西', conds:['被你绕着走{N}天的','积灰超过{N}天的','你说不出名字的','一直说要处理但没动的']},
+    {name:'垃圾袋', conds:['该拎下楼的','已经满的','放了{N}天的']},
+    {name:'杂物', conds:['搬来时就在那的','{N}天没碰的','不知道什么时候放的']},
+    {name:'衣服', conds:['掉在地上{N}天的','不穿的','该洗但堆太久的']},
+    {name:'盒子', conds:['空的','不知道装什么的','积灰的','占位置的']},
+    {name:'瓶瓶罐罐', conds:['空的','过期的','不用的','积灰的']},
+  ],
+  bag: [
+    {name:'小票', conds:['超过{N}天的','皱巴巴的','不需要的','不知道买了什么的']},
+    {name:'会员卡', conds:['过期的','用不到的','重复的','不记得哪家店的']},
+    {name:'碎屑', conds:['在包底的','不明来源的','积了很久的']},
+    {name:'纸巾', conds:['用过的','散落的','拆了包装的']},
+    {name:'卡', conds:['过期的','不用的','重复的','不知道什么卡的']},
+    {name:'小物件', conds:['{N}天没用过的','不记得为什么在包里的','多余的']},
+    {name:'充电宝', conds:['很久没用的','坏了的','已经有替代的']},
+    {name:'钥匙', conds:['不知道开什么的','不再需要的','多余的']},
+    {name:'零食包装', conds:['吃完的','过期的','不想吃的']},
+  ],
+  bath: [
+    {name:'瓶子', conds:['只剩一点的','已经换了新的还留着的','空的','过期的']},
+    {name:'试用装', conds:['放了超过{N}天的','不喜欢的','过期的','用不上的']},
+    {name:'牙刷', conds:['该换的','用旧的','多余的','刷毛散了的']},
+    {name:'护肤品', conds:['不用的','过期的','用了过敏的','打开超过{N}天的']},
+    {name:'毛巾', conds:['变硬的','掉色的','有异味的','多余的']},
+    {name:'药', conds:['过期的','{N}天没吃的','不知道治什么的','剩了一两片的']},
+    {name:'洗护产品', conds:['试了不喜欢的','快过期的','重复的','用不完的']},
+    {name:'梳子', conds:['断齿的','不用的','重复的','缠着头发的']},
+    {name:'收纳架上的东西', conds:['积了水垢的','不需要的','放了{N}天没碰的']},
+  ],
+  kitchen: [
+    {name:'调料', conds:['过期的','超过{N}天没用的','不知道什么味道的','结块的']},
+    {name:'食物', conds:['冰箱里过期的','放了太久的','不会吃的','忘了什么时候买的']},
+    {name:'餐具', conds:['缺角的','重复的','不用的','一次性的','多余的']},
+    {name:'塑料袋', conds:['囤了太多的','破了的','超过{N}个的']},
+    {name:'海绵', conds:['该换的','有异味的','用旧的','变色的']},
+    {name:'厨房工具', conds:['买了没用过的','重复的','坏了的','{N}天没碰的']},
+    {name:'保鲜盒', conds:['没有盖的','变形的','重复的','染色的']},
+    {name:'杯子', conds:['不用的','漏水的','重复的','缺了口的']},
+    {name:'酱料', conds:['开封超过{N}天的','不知道什么时候开的','不好吃的']},
+  ],
+};
+
+// Sentence patterns — functions that combine zone/item/condition
+// z=zone location, i=item name, c=condition (with 的)
+const PATTERNS = [
+  // 疑问式
+  (z,i,c) => `${z}有没有${c}${i}？`,
+  (z,i,c) => `${z}是不是有${c}${i}？`,
+  (z,i,c) => `看一下${z}，有${c}${i}吗？`,
+  (z,i,c) => `翻一下${z}，有没有${c}${i}？`,
+  (z,i,c) => `${z}的${i}，有${c}吗？`,
+  // 祈使式
+  (z,i,c) => `检查一下${z}的${i}。${c}就处理掉。`,
+  (z,i,c) => `翻一下${z}。${c}${i}可以清掉了。`,
+  // 反问式
+  (z,i,_c) => `你上次用${z}的${i}是什么时候？想不起来就不需要了。`,
+  (z,i,_c) => `${z}的${i}，还在用吗？不用就别留了。`,
+  // 陈述式
+  (z,i,c) => `${z}应该有${c}${i}吧。`,
+  (z,i,c) => `${z}那边，${c}${i}可以清一下了。`,
+  // 挑战式
+  (z,_i,_c) => `从${z}找出一件不需要的东西。就一件。`,
+  (z,_i,_c) => `${z}里肯定有一样东西是多余的。找到它。`,
+];
+
+// Time-specific openers (prepended to some questions)
+const TIME_OPENERS = {
+  morning: ['出门前，','早上顺手看一眼：','趁早上清醒，'],
+  evening: ['睡前看一下：','今天结束前，','晚上有空的话，'],
+  anytime: [''],
+};
+const WEATHER_OPENERS = {
+  rain: ['下雨天在家，正好','外面下雨，趁机','反正出不了门，'],
+  clear: ['天气不错，顺便',''],
+  any: [''],
+};
+// Weekend/weekday
+function isWeekend() { return [0,6].includes(new Date().getDay()); }
+const WEEKEND_OPENERS = ['今天不赶时间，','周末有空，','闲着也是闲着，'];
+
+// Season awareness
+function getSeason() {
+  const m = new Date().getMonth();
+  if (m >= 2 && m <= 4) return 'spring';
+  if (m >= 5 && m <= 7) return 'summer';
+  if (m >= 8 && m <= 10) return 'autumn';
+  return 'winter';
+}
+// Seasonal bonus questions (occasionally injected)
+const SEASON_QS = {
+  spring: ['冬天的厚衣服还挂着吗？春天了，收起来或者送走吧。','有没有去年春天买的、今年春天不想穿的？'],
+  summer: ['有没有太厚的毛巾可以换成薄的？','冬天的靴子还在门口吗？'],
+  autumn: ['夏天的拖鞋还在地上吗？不穿了就收走。','有没有过季的防晒霜已经不用了？'],
+  winter: ['有没有夏天的凉鞋还占着鞋柜？','薄衣服可以收起来了。有没有顺便能淘汰的？'],
+};
+
+// Number values for {N}
+const N_DAYS = [3,5,7,14,30];
+const N_COUNT = [5,10,15,20];
+
+// ─── Generator ───
+function generateQuestion() {
+  const zones = Object.keys(ITEMS);
+  const zone = zones[Math.floor(Math.random() * zones.length)];
+  const zoneItems = ITEMS[zone];
+  const item = zoneItems[Math.floor(Math.random() * zoneItems.length)];
+  const cond = item.conds[Math.floor(Math.random() * item.conds.length)];
+  const pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+
+  // Replace {N} in condition
+  let condText = cond;
+  if (condText.includes('{N}')) {
+    const pool = condText.includes('个') ? N_COUNT : N_DAYS;
+    condText = condText.replace('{N}', pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  // Generate base question
+  const zLoc = ZONE_LOCS[zone] || ZONE_NAMES[zone];
+  let text = pattern(zLoc, item.name, condText);
+
+  // 20% chance: add a time/weather/weekend opener
+  if (Math.random() < 0.2) {
+    const timePeriod = getTimePeriod();
+    const openers = TIME_OPENERS[timePeriod] || [''];
+    const opener = openers[Math.floor(Math.random() * openers.length)];
+    if (opener) text = opener + text;
+  } else if (Math.random() < 0.15 && currentWeather === 'rain') {
+    const openers = WEATHER_OPENERS.rain;
+    text = openers[Math.floor(Math.random() * openers.length)] + text;
+  } else if (Math.random() < 0.1 && isWeekend()) {
+    const opener = WEEKEND_OPENERS[Math.floor(Math.random() * WEEKEND_OPENERS.length)];
+    text = opener + text;
+  }
+
+  // 5% chance: inject a seasonal question instead
+  if (Math.random() < 0.05) {
+    const sq = SEASON_QS[getSeason()];
+    if (sq) {
+      text = sq[Math.floor(Math.random() * sq.length)];
+      return {zone: 'floor', zoneName: ZONE_NAMES.floor, text};
+    }
+  }
+
+  return {zone, zoneName: ZONE_NAMES[zone], text};
+}
+
+// ═══════════════════════════
+//  STORAGE
+// ═══════════════════════════
+const SK = {
+  history: 'toss_history',
+  keeps: 'toss_keeps',
+};
+const ld = (k,d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; }};
+const sv = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+// ═══════════════════════════
+//  DATE & TIME
+// ═══════════════════════════
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function getTimePeriod() {
+  const h = new Date().getHours();
+  if (h < 11) return 'morning';
+  if (h >= 19) return 'evening';
+  return 'anytime';
+}
+function fmtDate(ds) {
+  const [y,m,d] = ds.split('-');
+  return `${+m}月${+d}日`;
+}
+const MONTHS_ZH = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+const WEEKDAYS = ['日','一','二','三','四','五','六'];
+
+// ═══════════════════════════
+//  WEATHER
+// ═══════════════════════════
+let currentWeather = 'any'; // 'clear', 'rain', 'any'
+
+async function fetchWeather() {
+  try {
+    const pos = await new Promise((res, rej) => {
+      navigator.geolocation.getCurrentPosition(res, rej, {timeout: 5000});
+    });
+    const {latitude: lat, longitude: lon} = pos.coords;
+    const resp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+    const data = await resp.json();
+    const code = data.current_weather?.weathercode ?? 0;
+    // WMO codes: 0-3 clear/cloudy, 45-48 fog, 51+ rain/drizzle/snow
+    if (code >= 51) currentWeather = 'rain';
+    else currentWeather = 'clear';
+  } catch {
+    currentWeather = 'any'; // fallback
+  }
+}
+
+// ═══════════════════════════
+//  QUESTION MANAGEMENT
+// ═══════════════════════════
+function getOrGenerateQuestion(fresh = false) {
+  const td = today();
+  const hist = ld(SK.history, {});
+
+  // If already have a question for today and not requesting fresh, return it
+  if (!fresh && hist[td]?.currentQ) {
+    return hist[td].currentQ;
+  }
+
+  // Generate new question
+  const q = generateQuestion();
+  return {zone: q.zone, zoneName: q.zoneName, text: q.text};
+}
+
+// ═══════════════════════════
+//  STATE
+// ═══════════════════════════
+let currentQuestion = null;
+
+// ═══════════════════════════
+//  CONTEXT LINE
+// ═══════════════════════════
+function updateContextLine() {
+  const el = document.getElementById('context-line');
+  const d = new Date();
+  const h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const dayStr = `${d.getMonth()+1}月${d.getDate()}日 ${WEEKDAYS[d.getDay()]}`;
+
+  let timeGreet = '';
+  if (h < 8) timeGreet = '早';
+  else if (h < 11) timeGreet = '上午';
+  else if (h < 14) timeGreet = '中午';
+  else if (h < 18) timeGreet = '下午';
+  else if (h < 22) timeGreet = '晚上';
+  else timeGreet = '深夜';
+
+  let weatherStr = '';
+  if (currentWeather === 'rain') weatherStr = ' · 外面在下雨';
+  else if (currentWeather === 'clear') weatherStr = '';
+
+  el.textContent = `${dayStr} · ${timeGreet}${weatherStr}`;
+}
+
+// ═══════════════════════════
+//  RENDER HOME
+// ═══════════════════════════
+function renderHome() {
+  updateContextLine();
+  const td = today();
+  const hist = ld(SK.history, {});
+  const entry = hist[td];
+
+  const qState = document.getElementById('q-state');
+  const doneMsg = document.getElementById('done-msg');
+
+  if (entry?.answered && !entry?._showingNew) {
+    qState.style.display = 'none';
+    const count = entry.questionCount || 1;
+    const discards = (entry.discardCount || 0) + (entry.extraDiscards || 0);
+    renderRings(discards);
+    document.getElementById('done-text').textContent = count === 1 ? '今天回答了一题' : `今天回答了 ${count} 题`;
+    document.getElementById('done-sub').textContent = discards > 0 ? `丢了 ${discards} 件` : '参与就是进步';
+    doneMsg.classList.add('show');
+  } else {
+    doneMsg.classList.remove('show');
+    qState.style.display = 'block';
+
+    const fresh = !!entry?._showingNew;
+    currentQuestion = getOrGenerateQuestion(fresh);
+    document.getElementById('q-zone').textContent = currentQuestion.zoneName || '';
+    document.getElementById('q-text').textContent = currentQuestion.text;
+    document.getElementById('answer-btns').style.display = 'flex';
+    document.getElementById('followup').classList.remove('show');
+    document.getElementById('fu-note-wrap').classList.remove('show');
+    document.getElementById('fu-note').value = '';
+
+    const card = document.getElementById('question-card');
+    card.style.animation = 'none';
+    card.offsetHeight;
+    card.style.animation = 'fadeUp 0.5s ease forwards';
+
+    if (!hist[td]) hist[td] = {};
+    hist[td].currentQ = currentQuestion;
+    delete hist[td]._showingNew;
+    sv(SK.history, hist);
+  }
+
+  updateStats();
+}
+
+// ═══════════════════════════
+//  CONCENTRIC RINGS
+// ═══════════════════════════
+function renderRings(count) {
+  const el = document.getElementById('done-rings');
+  const n = Math.max(1, count); // at least 1 ring
+  const maxRings = 8; // visual cap
+  const rings = Math.min(n, maxRings);
+  const baseR = 16;
+  const gap = 10;
+  const maxR = baseR + (rings - 1) * gap;
+  const sz = (maxR + 8) * 2;
+
+  let circles = '';
+  for (let i = 0; i < rings; i++) {
+    const r = baseR + i * gap;
+    const opacity = count === 0 ? 0.15 : (0.12 + 0.1 * (i / Math.max(1, rings - 1)));
+    const strokeW = i === rings - 1 && count > 0 ? 1.5 : 1;
+    const color = count === 0 ? 'var(--t4)' : 'var(--accent)';
+    const delay = i * 0.08;
+    circles += `<circle cx="${sz/2}" cy="${sz/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeW}" opacity="0" style="animation: ringFade 0.4s ease ${delay}s forwards;"/>`;
+  }
+  // Show count in center if > 0
+  const centerText = count > 0
+    ? `<text x="${sz/2}" y="${sz/2 + 1}" text-anchor="middle" dominant-baseline="middle" font-family="'DM Mono',monospace" font-size="16" fill="var(--accent2)" opacity="0" style="animation: ringFade 0.3s ease 0.1s forwards;">${count}</text>`
+    : `<text x="${sz/2}" y="${sz/2 + 1}" text-anchor="middle" dominant-baseline="middle" font-family="'DM Mono',monospace" font-size="14" fill="var(--t4)" opacity="0" style="animation: ringFade 0.3s ease 0.1s forwards;">○</text>`;
+
+  el.innerHTML = `<svg viewBox="0 0 ${sz} ${sz}" width="${sz}" height="${sz}" xmlns="http://www.w3.org/2000/svg">
+    <style>@keyframes ringFade { to { opacity: 1; } }</style>
+    ${circles}${centerText}
+  </svg>`;
+}
+
+function nextQuestion() {
+  const td = today();
+  const hist = ld(SK.history, {});
+  if (!hist[td]) hist[td] = {};
+  hist[td]._showingNew = true;
+  sv(SK.history, hist);
+  document.getElementById('done-msg').classList.remove('show');
+  renderHome();
+}
+
+// ═══════════════════════════
+//  ANSWERS
+// ═══════════════════════════
+function answerNo() {
+  const td = today();
+  const hist = ld(SK.history, {});
+  if (!hist[td]) hist[td] = {};
+  hist[td].answered = true;
+  hist[td].questionCount = (hist[td].questionCount || 0) + 1;
+  sv(SK.history, hist);
+
+  const discards = (hist[td].discardCount || 0) + (hist[td].extraDiscards || 0);
+  document.getElementById('q-state').style.display = 'none';
+  renderRings(discards);
+  document.getElementById('done-text').textContent = '没有需要丢的';
+  document.getElementById('done-sub').textContent = discards > 0 ? `今天已丢 ${discards} 件` : '参与就是进步';
+  document.getElementById('done-msg').classList.add('show');
+  updateStats();
+}
+
+function answerYes() {
+  document.getElementById('answer-btns').style.display = 'none';
+  document.getElementById('followup').classList.add('show');
+}
+
+function doDiscard() {
+  const td = today();
+  const hist = ld(SK.history, {});
+  if (!hist[td]) hist[td] = {};
+  hist[td].answered = true;
+  hist[td].discarded = true;
+  hist[td].discardCount = (hist[td].discardCount || 0) + 1;
+  hist[td].questionCount = (hist[td].questionCount || 0) + 1;
+  sv(SK.history, hist);
+
+  const total = hist[td].discardCount + (hist[td].extraDiscards || 0);
+  document.getElementById('q-state').style.display = 'none';
+  renderRings(total);
+  document.getElementById('done-text').textContent = '丢掉了';
+  document.getElementById('done-sub').textContent = total > 1 ? `今天已丢 ${total} 件` : '少一件，松一点';
+  document.getElementById('done-msg').classList.add('show');
+  updateStats();
+}
+
+function showKeepNote() {
+  document.getElementById('followup').classList.remove('show');
+  document.getElementById('fu-note-wrap').classList.add('show');
+  document.getElementById('fu-note').focus();
+}
+
+function doKeep() {
+  const note = document.getElementById('fu-note').value.trim();
+  saveKeepItem(note);
+}
+function doKeepSkip() {
+  saveKeepItem('');
+}
+
+function saveKeepItem(note) {
+  const keeps = ld(SK.keeps, []);
+  keeps.push({
+    id: 'k' + Date.now(),
+    question: currentQuestion.text,
+    note: note,
+    date: today(),
+    done: false
+  });
+  sv(SK.keeps, keeps);
+
+  const td = today();
+  const hist = ld(SK.history, {});
+  if (!hist[td]) hist[td] = {};
+  hist[td].answered = true;
+  hist[td].kept = true;
+  hist[td].questionCount = (hist[td].questionCount || 0) + 1;
+  sv(SK.history, hist);
+
+  const discards = (hist[td].discardCount || 0) + (hist[td].extraDiscards || 0);
+  document.getElementById('q-state').style.display = 'none';
+  renderRings(discards);
+  document.getElementById('done-text').textContent = '已加入待丢清单';
+  document.getElementById('done-sub').textContent = '等你准备好了再处理';
+  document.getElementById('done-msg').classList.add('show');
+  updateStats();
+}
+
+// ═══════════════════════════
+//  STATS
+// ═══════════════════════════
+function updateStats() {
+  const hist = ld(SK.history, {});
+  let discarded = 0;
+  Object.values(hist).forEach(h => {
+    discarded += (h.discardCount || (h.discarded ? 1 : 0)) + (h.extraDiscards || 0);
+  });
+  document.getElementById('stat-discarded').textContent = discarded;
+}
+
+// ═══════════════════════════
+//  KEEP LIST
+// ═══════════════════════════
+
+function renderKeepList() {
+  const keeps = ld(SK.keeps, []);
+  const list = document.getElementById('keep-list');
+  const active = keeps.filter(k => !k.done);
+
+  if (!active.length) {
+    list.innerHTML = '<div class="keep-empty">清单是空的<br>暂时没有待丢的东西</div>';
+    return;
+  }
+
+  list.innerHTML = active.map(k => `
+    <div class="keep-item" id="ki-${k.id}">
+      <div class="ki-info">
+        <div class="ki-q">${k.question}</div>
+        ${k.note ? `<div class="ki-note">${k.note}</div>` : ''}
+        <div class="ki-date">${fmtDate(k.date)}</div>
+      </div>
+      <div class="ki-actions">
+        <button class="ki-btn done" onclick="keepDone('${k.id}')" title="已丢">✓</button>
+        <button class="ki-btn del" onclick="keepDel('${k.id}')" title="移除">×</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function keepDone(id) {
+  const keeps = ld(SK.keeps, []);
+  const k = keeps.find(x => x.id === id);
+  if (k) { k.done = true; sv(SK.keeps, keeps); }
+  // Also count as a discard in history
+  const td = today();
+  const hist = ld(SK.history, {});
+  if (!hist[td]) hist[td] = {};
+  if (!hist[td].extraDiscards) hist[td].extraDiscards = 0;
+  hist[td].extraDiscards++;
+  sv(SK.history, hist);
+  renderKeepList();
+  showToast('已丢 ✓');
+}
+
+function keepDel(id) {
+  appConfirm('从清单中移除？', () => {
+    const keeps = ld(SK.keeps, []).filter(x => x.id !== id);
+    sv(SK.keeps, keeps);
+    renderKeepList();
+  });
+}
+
+// ═══════════════════════════
+//  NAVIGATION
+// ═══════════════════════════
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  window.scrollTo(0, 0);
+  if (v === 'home') renderHome();
+  if (v === 'keep') renderKeepList();
+}
+
+// ═══════════════════════════
+//  CONFIRM & TOAST
+// ═══════════════════════════
+function appConfirm(msg, onOk) {
+  const ov = document.getElementById('confirm-overlay');
+  document.getElementById('confirm-msg').textContent = msg;
+  ov.classList.add('open');
+  const ok = document.getElementById('confirm-ok');
+  const ca = document.getElementById('confirm-cancel');
+  const cl = () => { ov.classList.remove('open'); ok.onclick = null; ca.onclick = null; };
+  ok.onclick = () => { cl(); onOk(); };
+  ca.onclick = cl;
+}
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ═══════════════════════════
+//  PUSH NOTIFICATIONS
+// ═══════════════════════════
+const VAPID_PUBLIC = 'BOZVi-7OjJGbMF-tr2q67o1Kg0ctU6RI5fB3wTj6S5vcjWU7ZaPdQYgZ_rMQOY2Q4ftC032uCkBv3AvPGaDhx6s';
+// ⬆ Replace with your own VAPID public key
+// Worker endpoint — replace with your Cloudflare Worker URL
+const PUSH_ENDPOINT = localStorage.getItem('toss_push_endpoint') || '';
+
+let swRegistration = null;
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swRegistration = await navigator.serviceWorker.register('sw.js');
+  } catch(e) {
+    console.log('SW registration failed:', e);
+  }
+}
+
+async function subscribePush() {
+  if (!swRegistration) return;
+  if (!PUSH_ENDPOINT) {
+    showToast('请先设置 Worker 地址');
+    return;
+  }
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      showToast('需要通知权限');
+      return;
+    }
+    const sub = await swRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+    });
+    // Send subscription to worker
+    const resp = await fetch(PUSH_ENDPOINT + '/subscribe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(sub.toJSON())
+    });
+    if (resp.ok) {
+      localStorage.setItem('toss_push_active', 'true');
+      updateNotifBtn();
+      showToast('推送已开启 ✓');
+    } else {
+      showToast('订阅失败，检查 Worker 地址');
+    }
+  } catch(e) {
+    console.error('Push subscribe failed:', e);
+    showToast('订阅失败');
+  }
+}
+
+async function unsubscribePush() {
+  if (!swRegistration) return;
+  try {
+    const sub = await swRegistration.pushManager.getSubscription();
+    if (sub) {
+      if (PUSH_ENDPOINT) {
+        fetch(PUSH_ENDPOINT + '/unsubscribe', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({endpoint: sub.endpoint})
+        }).catch(() => {});
+      }
+      await sub.unsubscribe();
+    }
+    localStorage.removeItem('toss_push_active');
+    updateNotifBtn();
+    showToast('推送已关闭');
+  } catch(e) {
+    console.error('Unsubscribe failed:', e);
+  }
+}
+
+function toggleNotif() {
+  const active = localStorage.getItem('toss_push_active') === 'true';
+  if (active) {
+    unsubscribePush();
+  } else {
+    // Check if endpoint is set
+    if (!PUSH_ENDPOINT) {
+      const url = prompt('输入你的 Cloudflare Worker 地址：\n（例如 https://toss-push.xxx.workers.dev）');
+      if (!url) return;
+      localStorage.setItem('toss_push_endpoint', url.replace(/\/+$/, ''));
+      location.reload();
+      return;
+    }
+    subscribePush();
+  }
+}
+
+function updateNotifBtn() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  const active = localStorage.getItem('toss_push_active') === 'true';
+  btn.textContent = active ? '🔔' : '🔕';
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+// ═══════════════════════════
+//  BOOT
+// ═══════════════════════════
+async function boot() {
+  await registerSW();
+  updateNotifBtn();
+  fetchWeather();
+  switchView('home');
+}
+boot();
+</script>
+</body>
+</html>
